@@ -39,7 +39,7 @@ if (finePointer && !reduceMotion) {
 
 const canvas = document.querySelector('#void-canvas');
 const ctx = canvas.getContext('2d');
-let dpr = 1, points = [], burstEnergy = 0;
+let dpr = 1, points = [], burstEnergy = 0, signalMode = 'idle', modeHue = 0;
 function resizeCanvas() {
   dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr; canvas.style.width = `${innerWidth}px`; canvas.style.height = `${innerHeight}px`; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   points = Array.from({ length: Math.min(90, Math.floor(innerWidth / 14)) }, () => ({ x: (Math.random() - .5) * 680, y: (Math.random() - .5) * 680, z: Math.random() * 900 + 80 }));
@@ -48,7 +48,8 @@ addEventListener('resize', resizeCanvas); resizeCanvas();
 function rotate3D(point, ax, ay) { const cosX = Math.cos(ax), sinX = Math.sin(ax), cosY = Math.cos(ay), sinY = Math.sin(ay); const y = point.y * cosX - point.z * sinX; const z1 = point.y * sinX + point.z * cosX; return { x: point.x * cosY + z1 * sinY, y, z: -point.x * sinY + z1 * cosY }; }
 function drawVoid(time = 0) {
   ctx.clearRect(0, 0, innerWidth, innerHeight); const centerX = innerWidth * .5, centerY = innerHeight * .5, t = time * .00018; const mx = (mouseX / innerWidth - .5) * .45, my = (mouseY / innerHeight - .5) * .3; ctx.lineWidth = 1;
-  for (let ring = 0; ring < 3; ring++) { ctx.beginPath(); for (let i = 0; i <= 110; i++) { const angle = i / 110 * Math.PI * 2, radius = 145 + ring * 32 + Math.sin(angle * 3 + t * 4 + burstEnergy) * (8 + burstEnergy * 10); const point = rotate3D({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, z: Math.sin(angle * 2) * 45 }, my + t + burstEnergy * .2, mx + t * .7 + scrollRatio * 5 + burstEnergy); const scale = 520 / (520 + point.z), x = centerX + point.x * scale, y = centerY + point.y * scale; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = ring === 1 ? 'rgba(184,255,33,.20)' : 'rgba(124,54,255,.18)'; ctx.stroke(); }
+  for (let ring = 0; ring < 5; ring++) { ctx.beginPath(); for (let i = 0; i <= 130; i++) { const angle = i / 130 * Math.PI * 2, pulse = signalMode === 'breathe' ? Math.sin(t * 18) * 12 : 0, radius = 125 + ring * 27 + pulse + Math.sin(angle * (3 + ring % 2) + t * 4 + burstEnergy) * (7 + burstEnergy * 11); const point = rotate3D({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, z: Math.sin(angle * 2 + ring) * (38 + ring * 5) }, my + t + burstEnergy * .2, mx + t * .7 + scrollRatio * 5 + burstEnergy); const scale = 520 / (520 + point.z), x = centerX + point.x * scale, y = centerY + point.y * scale; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = ring % 2 ? `hsla(${84 + modeHue},100%,57%,${.10 + ring * .025})` : `hsla(${262 + modeHue},100%,61%,${.13 + ring * .018})`; ctx.stroke(); }
+  ctx.save(); ctx.translate(centerX, centerY); ctx.rotate(t * .6 + scrollRatio * Math.PI); ctx.strokeStyle = 'rgba(184,255,33,.12)'; for (let s = 0; s < 8; s++) { ctx.rotate(Math.PI / 4); ctx.beginPath(); ctx.moveTo(210, 0); ctx.lineTo(260 + burstEnergy * 25, 0); ctx.stroke(); } ctx.restore();
   points.forEach((point) => { point.z -= .7 + scrollRatio * 2 + burstEnergy * 7; if (point.z < 10) point.z = 980; const scale = 460 / point.z, x = centerX + point.x * scale, y = centerY + point.y * scale, alpha = Math.min(.34, (1 - point.z / 1000) * .4); ctx.fillStyle = `rgba(101,245,255,${alpha})`; ctx.fillRect(x, y, Math.max(.6, scale * 1.4), Math.max(.6, scale * 1.4)); });
   burstEnergy *= .965;
   if (!reduceMotion) requestAnimationFrame(drawVoid);
@@ -68,17 +69,20 @@ let eventTimer;
 function fireEvent(name, source) {
   clearTimeout(eventTimer);
   burstEnergy = 2.2;
-  eventName.textContent = `SYS_EVENT // ${name}`;
-  eventCode.textContent = String(Math.floor(Math.random() * 90) + 10);
+  const mode = source?.dataset.mode || 'impact';
+  signalMode = mode;
+  modeHue = ({ scale: 0, shift: 55, voice: -24, breathe: 105, impact: 0 })[mode] || 0;
+  eventName.textContent = mode === 'impact' ? 'AURA ENGINE // COLLAPSE' : `NOW TRANSMITTING // ${mode.toUpperCase()}`;
+  eventCode.textContent = name.replaceAll('_', ' ');
   eventFlash.classList.remove('fire');
   void eventFlash.offsetWidth;
   eventFlash.classList.add('fire');
   document.body.classList.add('eventing');
-  if (source?.classList.contains('lex-card')) {
+  if (source?.classList?.contains('lex-card')) {
     document.querySelectorAll('.lex-card').forEach((card) => card.classList.remove('is-active'));
     source.classList.add('is-active');
   }
-  if (soundOn) tone(55 + Math.random() * 60, .12, 'sawtooth');
+  if (soundOn) tone(({ scale: 62, shift: 84, voice: 108, breathe: 48 })[mode] || 55, .12, 'sawtooth');
   eventTimer = setTimeout(() => { document.body.classList.remove('eventing'); eventFlash.classList.remove('fire'); }, 680);
 }
 document.querySelectorAll('[data-event]').forEach((item) => {
@@ -104,3 +108,19 @@ document.querySelectorAll('.portal-trigger').forEach((trigger) => {
 });
 portalClose.addEventListener('click', () => portal.close());
 portal.addEventListener('click', (event) => { if (event.target === portal) portal.close(); });
+
+const audioDeck = document.querySelector('.audio-deck');
+const deckToggle = document.querySelector('.deck-toggle');
+deckToggle.addEventListener('click', () => {
+  const open = audioDeck.classList.toggle('open');
+  deckToggle.setAttribute('aria-expanded', String(open));
+  if (open) fireEvent('AUDIO SLOT ARMED', { dataset: { mode: 'voice' } });
+});
+
+document.querySelectorAll('.lex-card').forEach((card) => {
+  card.addEventListener('pointermove', (event) => {
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty('--beam-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+    card.style.setProperty('--beam-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+  });
+});
