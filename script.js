@@ -1,5 +1,7 @@
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const finePointer = matchMedia('(pointer:fine)').matches;
+const lite = matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+if (lite) document.documentElement.classList.add('lite');
 const revealObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
   if (entry.isIntersecting) { entry.target.classList.add('in'); revealObserver.unobserve(entry.target); }
 }), { threshold: 0.12 });
@@ -10,13 +12,20 @@ const sceneObserver = new IntersectionObserver((entries) => entries.forEach((ent
 }), { threshold: 0.45 });
 document.querySelectorAll('.scene').forEach((scene) => sceneObserver.observe(scene));
 
+let heroVisible = true, startHeroTilt = null;
+const motionObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
+  entry.target.classList.toggle('offscreen', !entry.isIntersecting);
+  if (entry.target.classList.contains('hero')) { heroVisible = entry.isIntersecting; if (heroVisible) startHeroTilt?.(); }
+}), { rootMargin: '150px 0px' });
+document.querySelectorAll('.scene').forEach((scene) => motionObserver.observe(scene));
+
 const meter = document.querySelector('.scroll-meter span');
 const depthItems = document.querySelectorAll('[data-depth]');
 let scrollRatio = 0;
 function updateScroll() {
   const available = document.documentElement.scrollHeight - innerHeight;
   scrollRatio = available ? scrollY / available : 0;
-  meter.style.height = `${scrollRatio * 100}%`;
+  meter.style.transform = `scaleY(${scrollRatio})`;
   if (!reduceMotion) depthItems.forEach((item) => { item.style.transform = `translate3d(0,${scrollY * Number(item.dataset.depth)}px,0)`; });
 }
 addEventListener('scroll', updateScroll, { passive: true }); updateScroll();
@@ -39,16 +48,22 @@ if (finePointer && !reduceMotion) {
 
 const canvas = document.querySelector('#void-canvas');
 const ctx = canvas.getContext('2d');
-let dpr = 1, points = [], burstEnergy = 0, signalMode = 'idle', modeHue = 0;
+let dpr = 1, points = [], burstEnergy = 0, signalMode = 'idle', modeHue = 0, canvasWidth = -1, canvasHeight = -1, lastDraw = 0;
+const ringSteps = lite ? 56 : 130;
 function resizeCanvas() {
-  dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr; canvas.style.width = `${innerWidth}px`; canvas.style.height = `${innerHeight}px`; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  points = Array.from({ length: Math.min(90, Math.floor(innerWidth / 14)) }, () => ({ x: (Math.random() - .5) * 680, y: (Math.random() - .5) * 680, z: Math.random() * 900 + 80 }));
+  // Mobile URL bars fire resize while scrolling; only rebuild when the size really changes.
+  if (innerWidth === canvasWidth && Math.abs(innerHeight - canvasHeight) < 160) return;
+  canvasWidth = innerWidth; canvasHeight = innerHeight;
+  dpr = lite ? 1 : Math.min(devicePixelRatio || 1, 2); canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr; canvas.style.width = `${innerWidth}px`; canvas.style.height = `${innerHeight}px`; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  points = Array.from({ length: lite ? 32 : Math.min(90, Math.floor(innerWidth / 14)) }, () => ({ x: (Math.random() - .5) * 680, y: (Math.random() - .5) * 680, z: Math.random() * 900 + 80 }));
 }
 addEventListener('resize', resizeCanvas); resizeCanvas();
 function rotate3D(point, ax, ay) { const cosX = Math.cos(ax), sinX = Math.sin(ax), cosY = Math.cos(ay), sinY = Math.sin(ay); const y = point.y * cosX - point.z * sinX; const z1 = point.y * sinX + point.z * cosX; return { x: point.x * cosY + z1 * sinY, y, z: -point.x * sinY + z1 * cosY }; }
 function drawVoid(time = 0) {
+  if (lite && time - lastDraw < 32) { requestAnimationFrame(drawVoid); return; }
+  lastDraw = time;
   ctx.clearRect(0, 0, innerWidth, innerHeight); const centerX = innerWidth * .5, centerY = innerHeight * .5, t = time * .00018; const mx = (mouseX / innerWidth - .5) * .45, my = (mouseY / innerHeight - .5) * .3; ctx.lineWidth = 1;
-  for (let ring = 0; ring < 5; ring++) { ctx.beginPath(); for (let i = 0; i <= 130; i++) { const angle = i / 130 * Math.PI * 2, pulse = signalMode === 'breathe' ? Math.sin(t * 18) * 12 : 0, radius = 125 + ring * 27 + pulse + Math.sin(angle * (3 + ring % 2) + t * 4 + burstEnergy) * (7 + burstEnergy * 11); const point = rotate3D({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, z: Math.sin(angle * 2 + ring) * (38 + ring * 5) }, my + t + burstEnergy * .2, mx + t * .7 + scrollRatio * 5 + burstEnergy); const scale = 520 / (520 + point.z), x = centerX + point.x * scale, y = centerY + point.y * scale; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = ring % 2 ? `hsla(${84 + modeHue},100%,57%,${.10 + ring * .025})` : `hsla(${262 + modeHue},100%,61%,${.13 + ring * .018})`; ctx.stroke(); }
+  for (let ring = 0; ring < 5; ring++) { ctx.beginPath(); for (let i = 0; i <= ringSteps; i++) { const angle = i / ringSteps * Math.PI * 2, pulse = signalMode === 'breathe' ? Math.sin(t * 18) * 12 : 0, radius = 125 + ring * 27 + pulse + Math.sin(angle * (3 + ring % 2) + t * 4 + burstEnergy) * (7 + burstEnergy * 11); const point = rotate3D({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, z: Math.sin(angle * 2 + ring) * (38 + ring * 5) }, my + t + burstEnergy * .2, mx + t * .7 + scrollRatio * 5 + burstEnergy); const scale = 520 / (520 + point.z), x = centerX + point.x * scale, y = centerY + point.y * scale; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.strokeStyle = ring % 2 ? `hsla(${84 + modeHue},100%,57%,${.10 + ring * .025})` : `hsla(${262 + modeHue},100%,61%,${.13 + ring * .018})`; ctx.stroke(); }
   ctx.save(); ctx.translate(centerX, centerY); ctx.rotate(t * .6 + scrollRatio * Math.PI); ctx.strokeStyle = 'rgba(184,255,33,.12)'; for (let s = 0; s < 8; s++) { ctx.rotate(Math.PI / 4); ctx.beginPath(); ctx.moveTo(210, 0); ctx.lineTo(260 + burstEnergy * 25, 0); ctx.stroke(); } ctx.restore();
   points.forEach((point) => { point.z -= .7 + scrollRatio * 2 + burstEnergy * 7; if (point.z < 10) point.z = 980; const scale = 460 / point.z, x = centerX + point.x * scale, y = centerY + point.y * scale, alpha = Math.min(.34, (1 - point.z / 1000) * .4); ctx.fillStyle = `rgba(101,245,255,${alpha})`; ctx.fillRect(x, y, Math.max(.6, scale * 1.4), Math.max(.6, scale * 1.4)); });
   burstEnergy *= .965;
@@ -299,14 +314,17 @@ if (!reduceMotion) {
   const hero = document.querySelector('.hero');
   hero.addEventListener('pointermove', (event) => { targetTiltY = (event.clientX / innerWidth - .5) * 56; targetTiltX = -8 - (event.clientY / innerHeight - .5) * 38; });
   hero.addEventListener('pointerleave', () => { targetTiltX = -8; targetTiltY = 0; });
+  let tiltRunning = false;
   const tiltHero = () => {
+    if (!heroVisible) { tiltRunning = false; return; }
     tiltX += (targetTiltX - tiltX) * .07; tiltY += (targetTiltY - tiltY) * .07;
-    heroScene.style.setProperty('--rx', `${tiltX.toFixed(2)}deg`);
-    heroScene.style.setProperty('--ry', `${(tiltY + scrollRatio * 140).toFixed(2)}deg`);
-    if (++hudFrame % 6 === 0) heroRot.textContent = `ROT ${String(Math.round(Math.abs(tiltX))).padStart(3, '0')}° / ${String(Math.round(Math.abs(tiltY + scrollRatio * 140)) % 360).padStart(3, '0')}°`;
+    // Set transform directly: updating inherited custom properties restyles the whole 3D subtree every frame.
+    heroScene.style.transform = `rotateX(${tiltX.toFixed(2)}deg) rotateY(${(tiltY + scrollRatio * 140).toFixed(2)}deg)`;
+    if (++hudFrame % 10 === 0) heroRot.textContent = `ROT ${String(Math.round(Math.abs(tiltX))).padStart(3, '0')}° / ${String(Math.round(Math.abs(tiltY + scrollRatio * 140)) % 360).padStart(3, '0')}°`;
     requestAnimationFrame(tiltHero);
   };
-  tiltHero();
+  startHeroTilt = () => { if (!tiltRunning) { tiltRunning = true; requestAnimationFrame(tiltHero); } };
+  startHeroTilt();
 }
 heroArtifact.addEventListener('click', () => {
   heroArtifact.classList.remove('collapse');
