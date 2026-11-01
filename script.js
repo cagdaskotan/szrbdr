@@ -116,10 +116,10 @@ const deckMeta = document.querySelector('.deck-copy small');
 const deckStatus = document.querySelector('.deck-copy > span');
 const deckSource = document.querySelector('.deck-source');
 const tracks = [
-  { id: 'money', title: 'MONËY SO BIG', appleId: '1675399628', source: 'https://music.apple.com/us/song/1675399628' },
-  { id: 'come', title: 'COMË N GO', appleId: '1830346719', source: 'https://music.apple.com/us/song/1830346719' },
+  { id: 'money', title: 'MONËY SO BIG', appleId: '1675399628', source: 'https://music.apple.com/us/song/1675399628', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/39/40/03/394003bc-ab92-bfd4-2604-f94e31695536/mzaf_3737952009789400677.plus.aac.p.m4a' },
+  { id: 'come', title: 'COMË N GO', appleId: '1830346719', source: 'https://music.apple.com/us/song/1830346719', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/32/df/1e/32df1e5c-f6b0-c872-e7ff-1b817ef5a2e7/mzaf_11882061186503271522.plus.aac.p.m4a' },
   { id: 'die', title: 'D.I.E.', appleId: null, source: null },
-  { id: 'countup', title: 'COUNTUP', appleId: '6825987512', source: 'https://music.apple.com/us/album/countup/6825987374?i=6825987512' }
+  { id: 'countup', title: 'COUNTUP', appleId: '6825987512', source: 'https://music.apple.com/us/album/countup/6825987374?i=6825987512', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2c/df/d8/2cdfd825-c62a-8b96-900a-96be12227463/mzaf_2075193523418678729.plus.aac.p.m4a' }
 ];
 let activeTrack = 1;
 let loadToken = 0;
@@ -171,7 +171,7 @@ async function loadTrack(index, autoplay = false) {
   audioDeck.classList.remove('unavailable');
   audioDeck.classList.add('loading');
   deckStatus.textContent = 'CONNECTING TO OFFICIAL PREVIEW';
-  const preview = await resolvePreview(track);
+  const preview = track.preview || await resolvePreview(track);
   if (token !== loadToken) return;
   audioDeck.classList.remove('loading');
   if (!preview) {
