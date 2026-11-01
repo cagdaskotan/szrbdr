@@ -10,13 +10,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 </head>
 <body>
   <canvas id="void-canvas" aria-hidden="true"></canvas>
   <div class="grain" aria-hidden="true"></div><div class="scanline" aria-hidden="true"></div>
   <div class="cursor" aria-hidden="true"><i></i></div><div class="scroll-meter" aria-hidden="true"><span></span></div>
-  <div class="event-flash" aria-hidden="true"><span>TRANSMISSION READY</span><b>SIGNAL LOCKED</b><i></i><em></em></div>
+  <div class="burst" aria-hidden="true"><div class="burst-bg"></div><div class="burst-rays"></div><i class="burst-ring"></i><i class="burst-ring"></i><i class="burst-ring"></i><div class="burst-shards"></div><div class="burst-core"><span class="burst-mode">SIGNAL LOCKED</span><b class="burst-word"></b><span class="burst-code">SZRBDRSKMKDR // 0x04</span></div><div class="burst-bars"><i></i><i></i><i></i></div></div>
   <dialog class="portal" aria-label="Expanded visual"><button type="button" aria-label="Close visual">CLOSE_×</button><div class="portal-frame"><img alt="Expanded archive visual"/><span></span></div></dialog>
   <header class="site-nav">
     <a class="wordmark magnetic" href="#top" aria-label="Return to top"><b>SB</b><span>_04</span></a>
@@ -78,22 +78,22 @@
     <section id="channels" class="channels scene" data-scene="3">
       <div class="section-index reveal"><span>03</span><p>UNAUTHORIZED<br/>CHANNELS</p></div>
       <article class="channel channel-yeat">
-        <div class="channel-media holo reveal tilt portal-trigger" tabindex="0" role="button" data-caption="PRIME YEAT / CH_01"><img src="assets/media/yeat-concert.png" alt="szr with Yeat at a concert" /><svg class="sticker" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="st-yeat" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58"/><text><textPath href="#st-yeat">PRIME YEAT ✦ ON AIR ✦ TONKA CHANNEL ✦ </textPath></text><g><circle cx="60" cy="60" r="16"/></g></svg><div class="holo-ui"><span>CH_01 / LIVE</span><span>OPEN MEMORY</span><i></i></div></div>
+        <div class="channel-media holo reveal tilt portal-trigger" tabindex="0" role="button" data-caption="PRIME YEAT / CH_01"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/yeat-concert.png" alt="szr with Yeat at a concert" /><svg class="sticker" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="st-yeat" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58"/><text><textPath href="#st-yeat">PRIME YEAT ✦ ON AIR ✦ TONKA CHANNEL ✦ </textPath></text><g><circle cx="60" cy="60" r="16"/></g></svg><div class="holo-ui"><span>CH_01 / LIVE</span><span>OPEN MEMORY</span><i></i></div></div>
         <div class="channel-copy reveal"><p class="label">PRIME YEAT TRANSMISSION</p><h2>TOO MUCH<br/>BASS.<br/><span>NOT ENOUGH<br/>AURA.</span></h2><div class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="transmission">TONKA CHANNEL OPEN // STILL BUFFERING</p></div>
       </article>
       <article class="channel channel-gojo">
         <div class="channel-copy reveal"><p class="label">LIMITLESS REQUEST</p><h2>INFINITY<br/>BETWEEN<br/><span>’EM.</span></h2><p class="transmission">FRIEND REQUEST: PENDING SINCE 2004</p></div>
-        <div class="channel-media portrait holo reveal tilt portal-trigger" tabindex="0" role="button" data-caption="GOJO / CH_02"><img src="assets/media/szr-with-gojo.png" alt="szr standing with Satoru Gojo" /><svg class="sticker" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="st-gojo" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58"/><text><textPath href="#st-gojo">LIMITLESS ✦ INFINITY ✦ DOMAIN OPEN ✦ </textPath></text><g><circle cx="60" cy="60" r="16"/></g></svg><div class="holo-ui"><span>CH_02 / LIMITLESS</span><span>OPEN MEMORY</span><i></i></div></div>
+        <div class="channel-media portrait holo reveal tilt portal-trigger" tabindex="0" role="button" data-caption="GOJO / CH_02"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/szr-with-gojo.png" alt="szr standing with Satoru Gojo" /><svg class="sticker" viewBox="0 0 120 120" aria-hidden="true"><defs><path id="st-gojo" d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/></defs><circle cx="60" cy="60" r="58"/><text><textPath href="#st-gojo">LIMITLESS ✦ INFINITY ✦ DOMAIN OPEN ✦ </textPath></text><g><circle cx="60" cy="60" r="16"/></g></svg><div class="holo-ui"><span>CH_02 / LIMITLESS</span><span>OPEN MEMORY</span><i></i></div></div>
       </article>
     </section>
     <section id="nana" class="nana scene" data-scene="4">
       <div class="nana-signal" aria-hidden="true"><span>N</span><span>A</span><span>N</span><span>A</span></div>
       <div class="nana-copy reveal"><p class="label">03:17 / AFTERIMAGE</p><h2>STYLE<br/>TRANSFER<br/><span>FAILED.</span></h2><p class="transmission">NANA ON SCREEN // OSNS</p></div>
-      <div class="nana-stack reveal" aria-label="NANA visual archive"><figure class="nana-card nana-card-a tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / FRONT ROW"><img src="assets/media/nana-rock-selfie.png" alt="szr taking a selfie at a NANA rock concert"/><figcaption>FRAME_A / FRONT ROW</figcaption></figure><figure class="nana-card nana-card-b tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / LIVE FEED"><img src="assets/media/nana-concert.png" alt="szr at a NANA concert"/><figcaption>FRAME_B / NANA LIVE</figcaption></figure></div>
+      <div class="nana-stack reveal" aria-label="NANA visual archive"><figure class="nana-card nana-card-a tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / FRONT ROW"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/nana-rock-selfie.png" alt="szr taking a selfie at a NANA rock concert"/><figcaption>FRAME_A / FRONT ROW</figcaption></figure><figure class="nana-card nana-card-b tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / LIVE FEED"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/nana-concert.png" alt="szr at a NANA concert"/><figcaption>FRAME_B / NANA LIVE</figcaption></figure></div>
     </section>
     <section id="archive" class="archive scene" data-scene="5">
-      <div class="archive-head reveal"><div class="section-index"><span>04</span><p>UNFORTUNATE<br/>FOOTAGE</p></div><h2>DROP YOUR<br/><span>VISUALS.</span></h2></div>
-      <div class="archive-grid"><figure class="archive-cell cell-1 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="001 / PRIME CONTACT"><img src="assets/media/szr-with-yeat.png" alt="szr with Yeat"/><figcaption>001 / PRIME CONTACT</figcaption></figure><figure class="archive-cell cell-2 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="002 / DOMAIN CLASH"><img src="assets/media/yeat-concert.png" alt="szr with Yeat at a show"/><figcaption>002 / DOMAIN CLASH</figcaption></figure><figure class="archive-cell cell-3 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="003 / LIMITLESS BROLUK"><img src="assets/media/szr-with-gojo.png" alt="szr with Gojo in Tokyo"/><figcaption>003 / LIMITLESS BROLUK</figcaption></figure><figure class="archive-cell cell-4 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="004 / BACKSTAGE SIGNAL"><img src="assets/media/szr-vs-gojo.png" alt="szr facing Gojo in a cinematic scene"/><figcaption>004 / BACKSTAGE SIGNAL</figcaption></figure></div>
+      <div class="archive-head reveal"><div class="section-index"><span>04</span><p>UNFORTUNATE<br/>FOOTAGE</p></div><h2>DROP YOUR<br/><span>FIT.</span></h2></div>
+      <div class="archive-grid"><figure class="archive-cell cell-1 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="001 / PRIME CONTACT"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/szr-with-yeat.png" alt="szr with Yeat"/><figcaption>001 / PRIME CONTACT</figcaption></figure><figure class="archive-cell cell-2 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="002 / DOMAIN CLASH"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/yeat-concert.png" alt="szr with Yeat at a show"/><figcaption>002 / DOMAIN CLASH</figcaption></figure><figure class="archive-cell cell-3 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="003 / LIMITLESS BROLUK"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/szr-with-gojo.png" alt="szr with Gojo in Tokyo"/><figcaption>003 / LIMITLESS BROLUK</figcaption></figure><figure class="archive-cell cell-4 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="004 / BACKSTAGE SIGNAL"><span class="media-scan" aria-hidden="true"></span><img src="assets/media/szr-vs-gojo.png" alt="szr facing Gojo in a cinematic scene"/><figcaption>004 / BACKSTAGE SIGNAL</figcaption></figure></div>
     </section>
     <section id="outro" class="outro scene" data-scene="6">
       <div class="outro-sleeve reveal" aria-hidden="true"><div class="sleeve-image"></div><span>SB_04</span><small>NONCHALANT<br/>ARCHIVE</small></div>
@@ -105,7 +105,7 @@
     </section>
   </main>
   <footer><span>SB_04 // UNOFFICIAL PARODY FILE</span><span>NO REAL CLAIMS // NO AURA</span></footer>
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=12"></script>
   <script src="https://www.youtube.com/iframe_api" async></script>
 </body>
 </html>

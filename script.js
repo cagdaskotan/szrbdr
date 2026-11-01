@@ -56,27 +56,53 @@ function drawVoid(time = 0) {
 }
 if (!reduceMotion) requestAnimationFrame(drawVoid);
 
-const eventFlash = document.querySelector('.event-flash');
-const eventName = eventFlash.querySelector('span');
-const eventCode = eventFlash.querySelector('b');
-let eventTimer;
+const burst = document.querySelector('.burst');
+const burstMode = burst.querySelector('.burst-mode');
+const burstWord = burst.querySelector('.burst-word');
+const burstShards = burst.querySelector('.burst-shards');
+let eventTimer, lastPointer = null;
+addEventListener('pointerdown', (event) => { lastPointer = { x: event.clientX, y: event.clientY }; }, { capture: true, passive: true });
 function fireEvent(name, source) {
   clearTimeout(eventTimer);
   burstEnergy = 2.2;
   const mode = source?.dataset.mode || 'impact';
   signalMode = mode;
   modeHue = ({ scale: 0, shift: 55, voice: -24, breathe: 105, impact: 0 })[mode] || 0;
-  eventName.textContent = mode === 'impact' ? 'AURA ENGINE // COLLAPSE' : `NOW TRANSMITTING // ${mode.toUpperCase()}`;
-  eventCode.textContent = name.replaceAll('_', ' ');
-  eventFlash.classList.remove('fire');
-  void eventFlash.offsetWidth;
-  eventFlash.classList.add('fire');
+  const rect = source?.getBoundingClientRect();
+  const origin = lastPointer || (rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: innerWidth / 2, y: innerHeight / 2 });
+  lastPointer = null;
+  burst.style.setProperty('--x', `${origin.x}px`);
+  burst.style.setProperty('--y', `${origin.y}px`);
+  burst.dataset.mode = mode;
+  burstMode.textContent = mode === 'impact' ? 'AURA ENGINE // COLLAPSE' : `NOW TRANSMITTING // ${mode.toUpperCase()}`;
+  const text = name.replaceAll('_', ' ');
+  burstWord.dataset.text = text;
+  let letterIndex = 0;
+  burstWord.replaceChildren(...text.split(' ').flatMap((word, w) => {
+    const group = document.createElement('span');
+    group.className = 'burst-group';
+    group.append(...[...word].map((char) => {
+      const letter = document.createElement('span');
+      letter.textContent = char;
+      letter.style.cssText = `--i:${letterIndex++};--lx:${(Math.random() - .5) * 240}px;--ly:${(Math.random() - .5) * 200}px;--lr:${(Math.random() - .5) * 70}deg`;
+      return letter;
+    }));
+    return w ? [' ', group] : [group];
+  }));
+  burstShards.replaceChildren(...Array.from({ length: innerWidth < 640 ? 14 : 24 }, (_, i) => {
+    const shard = document.createElement('i'), angle = Math.random() * Math.PI * 2, distance = 160 + Math.random() * Math.max(innerWidth, innerHeight) * .45;
+    shard.style.cssText = `--dx:${Math.cos(angle) * distance}px;--dy:${Math.sin(angle) * distance}px;--r:${Math.random() * 720 - 360}deg;--s:${.5 + Math.random()};--d:${Math.random() * 90}ms;--c:${['var(--lime)', 'var(--violet)', 'var(--cyan)', 'var(--white)'][i % 4]}`;
+    return shard;
+  }));
+  burst.classList.remove('fire');
+  void burst.offsetWidth;
+  burst.classList.add('fire');
   document.body.classList.add('eventing');
   if (source?.classList?.contains('lex-card')) {
     document.querySelectorAll('.lex-card').forEach((card) => card.classList.remove('is-active'));
     source.classList.add('is-active');
   }
-  eventTimer = setTimeout(() => { document.body.classList.remove('eventing'); eventFlash.classList.remove('fire'); }, 680);
+  eventTimer = setTimeout(() => { document.body.classList.remove('eventing'); burst.classList.remove('fire'); }, reduceMotion ? 500 : 1250);
 }
 document.querySelectorAll('[data-event]').forEach((item) => {
   item.addEventListener('click', () => fireEvent(item.dataset.event, item));
