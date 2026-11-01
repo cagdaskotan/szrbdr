@@ -211,6 +211,8 @@ deckSeek.addEventListener('input', () => { if (deckAudio.duration) deckAudio.cur
 
 document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.addEventListener('click', () => {
   const index = tracks.findIndex((track) => track.id === card.dataset.track);
+  audioDeck.classList.add('open');
+  deckToggle.setAttribute('aria-expanded', 'true');
   loadTrack(index, true);
 }));
 
