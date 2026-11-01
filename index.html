@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <canvas id="void-canvas" aria-hidden="true"></canvas>
@@ -21,14 +21,19 @@
   <header class="site-nav">
     <a class="wordmark magnetic" href="#top" aria-label="Return to top"><b>SB</b><span>_04</span></a>
     <nav aria-label="Primary navigation"><a href="#profile">INDEX</a><a href="#channels">CHANNELS</a><a href="#archive">ARCHIVE</a></nav>
-    <button class="sound magnetic" type="button" aria-pressed="false"><i></i><span>SOUND_0</span></button>
+    <span class="nav-status">LIVE // SB_04</span>
   </header>
   <aside class="audio-deck" aria-label="Audio deck">
     <button class="deck-toggle magnetic" type="button" aria-expanded="false" aria-controls="audio-panel"><i></i><span>PLAYER</span></button>
     <div id="audio-panel" class="audio-panel">
       <div class="deck-disc" aria-hidden="true"><span>SB</span></div>
-      <div class="deck-copy"><small>LOCAL AUDIO SLOT</small><strong>COMË N GO</strong><span>LICENSED FILE REQUIRED</span></div>
+      <div class="deck-main">
+        <div class="deck-copy"><small>NOW SELECTED / 02</small><strong>COMË N GO</strong><span>SELECT LOCAL AUDIO TO PLAY</span></div>
+        <div class="deck-progress"><span class="deck-current">0:00</span><input class="deck-seek" type="range" min="0" max="1000" value="0" aria-label="Seek through track"/><span class="deck-duration">0:00</span></div>
+        <div class="deck-controls"><button class="deck-prev" type="button" aria-label="Previous track">↤</button><button class="deck-play" type="button" aria-label="Play or pause">▶</button><button class="deck-next" type="button" aria-label="Next track">↦</button><a class="deck-source" href="https://music.apple.com/us/song/1830346719" target="_blank" rel="noreferrer">OFFICIAL SOURCE ↗</a></div>
+      </div>
       <div class="deck-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <audio id="deck-audio" preload="metadata"></audio>
     </div>
   </aside>
   <main id="top">
@@ -44,10 +49,10 @@
     <section id="lexicon" class="lexicon scene" data-scene="1">
       <div class="section-index reveal"><span>01</span><p>YEAT<br/>TRANSMISSIONS</p></div>
       <div class="lexicon-stage">
-        <article class="lex-card reveal tilt interactive-3d" tabindex="0" role="button" data-event="MONËY SO BIG" data-mode="scale"><div class="track-orbit"><i></i><span>01</span></div><small>UP 2 MË / 2021</small><h2>MONËY<br/>SO BIG</h2><p>FULL-SCALE SIGNAL<br/>LOW END OVERLOAD</p><b>LOAD TRANSMISSION ↗</b></article>
-        <article class="lex-card reveal tilt interactive-3d" tabindex="0" role="button" data-event="OUT THË WAY" data-mode="shift"><div class="track-orbit"><i></i><span>02</span></div><small>LYFË / 2022</small><h2>OUT THË<br/>WAY</h2><p>LEFT CHANNEL BENT<br/>PATH CLEARED</p><b>SHIFT THE ROOM ↗</b></article>
-        <article class="lex-card reveal tilt interactive-3d" tabindex="0" role="button" data-event="TALK" data-mode="voice"><div class="track-orbit"><i></i><span>03</span></div><small>LYFË / 2022</small><h2>TALK</h2><p>VOICE INPUT HOT<br/>REPLY DENIED</p><b>OPEN CHANNEL ↗</b></article>
-        <article class="lex-card reveal tilt interactive-3d warning" tabindex="0" role="button" data-event="BREATHE" data-mode="breathe"><div class="track-orbit"><i></i><span>04</span></div><small>2093 / 2024</small><h2>BREATHE</h2><p>“HOLD YOUR BREATH<br/>’TIL YOU PASS OUT”</p><b>EXHALE SIGNAL ↗</b></article>
+        <article class="lex-card reveal tilt interactive-3d" tabindex="0" role="button" data-event="MONËY SO BIG" data-mode="scale" data-track="money"><div class="track-orbit"><i></i><span>01</span></div><small>UP 2 MË / 2021</small><h2>MONËY<br/>SO BIG</h2><p>FULL-SCALE SIGNAL<br/>LOW END OVERLOAD</p><b>PLAY TRANSMISSION ↗</b></article>
+        <article class="lex-card reveal tilt interactive-3d is-active" tabindex="0" role="button" data-event="COMË N GO" data-mode="shift" data-track="come"><div class="track-orbit"><i></i><span>02</span></div><small>DANGEROUS SUMMER / 2025</small><h2>COMË N<br/>GO</h2><p>DEFAULT CHANNEL<br/>SIGNAL ARMED</p><b>PLAY TRANSMISSION ↗</b></article>
+        <article class="lex-card reveal tilt interactive-3d" tabindex="0" role="button" data-event="D.I.E." data-mode="voice" data-track="die"><div class="track-orbit"><i></i><span>03</span></div><small>UNRELEASED / ARCHIVE</small><h2>D.I.E.</h2><p>VAULT FREQUENCY<br/>UNSTABLE SOURCE</p><b>PLAY TRANSMISSION ↗</b></article>
+        <article class="lex-card reveal tilt interactive-3d warning" tabindex="0" role="button" data-event="COUNTUP" data-mode="breathe" data-track="countup"><div class="track-orbit"><i></i><span>04</span></div><small>LUH LEAKYZ VOL. 1 / 2026</small><h2>COUNT<br/>UP</h2><p>YEAT + SUMMRS<br/>OFFICIAL SIGNAL</p><b>PLAY TRANSMISSION ↗</b></article>
       </div>
       <div class="lexicon-end reveal"><span>GOOFY SHIT</span><i></i><span>NO NOTES / NO DEFENCE</span></div>
     </section>
@@ -71,14 +76,14 @@
         <div class="channel-media portrait holo reveal tilt portal-trigger" tabindex="0" role="button" data-caption="GOJO / CH_02"><img src="assets/media/szr-with-gojo.png" alt="szr standing with Satoru Gojo" /><div class="holo-ui"><span>CH_02 / LIMITLESS</span><span>OPEN MEMORY</span><i></i></div></div>
       </article>
     </section>
-    <section class="nana scene" data-scene="4">
+    <section id="nana" class="nana scene" data-scene="4">
       <div class="nana-signal" aria-hidden="true"><span>N</span><span>A</span><span>N</span><span>A</span></div>
       <div class="nana-copy reveal"><p class="label">03:17 / AFTERIMAGE</p><h2>STYLE<br/>TRANSFER<br/><span>FAILED.</span></h2><p class="transmission">NANA ON SCREEN // OSNS</p></div>
-      <div class="nana-stack reveal" aria-label="NANA visual archive"><figure class="nana-card nana-card-a tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / LIVE FEED"><img src="assets/media/nana-concert.png" alt="szr at a NANA concert"/><figcaption>FRAME_A / NANA LIVE</figcaption></figure><figure class="nana-card nana-card-b tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / AFTERIMAGE"><img src="assets/media/nana-concert.png" alt="NANA concert afterimage"/><figcaption>FRAME_B / AFTERIMAGE</figcaption></figure></div>
+      <div class="nana-stack reveal" aria-label="NANA visual archive"><figure class="nana-card nana-card-a tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / FRONT ROW"><img src="assets/media/nana-rock-selfie.png" alt="szr taking a selfie at a NANA rock concert"/><figcaption>FRAME_A / FRONT ROW</figcaption></figure><figure class="nana-card nana-card-b tilt portal-trigger" tabindex="0" role="button" data-caption="NANA / LIVE FEED"><img src="assets/media/nana-concert.png" alt="szr at a NANA concert"/><figcaption>FRAME_B / NANA LIVE</figcaption></figure></div>
     </section>
     <section id="archive" class="archive scene" data-scene="5">
       <div class="archive-head reveal"><div class="section-index"><span>04</span><p>UNFORTUNATE<br/>FOOTAGE</p></div><h2>DROP YOUR<br/><span>VISUALS.</span></h2></div>
-      <div class="archive-grid"><figure class="archive-cell cell-1 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="001 / PRIME CONTACT"><img src="assets/media/szr-with-yeat.png" alt="szr with Yeat"/><figcaption>001 / PRIME CONTACT</figcaption></figure><figure class="archive-cell cell-2 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="002 / DOMAIN CLASH"><img src="assets/media/szr-vs-gojo.png" alt="szr facing Gojo in a cinematic scene"/><figcaption>002 / DOMAIN CLASH</figcaption></figure><figure class="archive-cell cell-3 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="003 / LIMITLESS BROLUK"><img src="assets/media/szr-with-gojo.png" alt="szr with Gojo in Tokyo"/><figcaption>003 / LIMITLESS BROLUK</figcaption></figure><figure class="archive-cell cell-4 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="004 / BACKSTAGE SIGNAL"><img src="assets/media/yeat-concert.png" alt="szr with Yeat at a show"/><figcaption>004 / BACKSTAGE SIGNAL</figcaption></figure></div>
+      <div class="archive-grid"><figure class="archive-cell cell-1 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="001 / PRIME CONTACT"><img src="assets/media/szr-with-yeat.png" alt="szr with Yeat"/><figcaption>001 / PRIME CONTACT</figcaption></figure><figure class="archive-cell cell-2 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="002 / DOMAIN CLASH"><img src="assets/media/yeat-concert.png" alt="szr with Yeat at a show"/><figcaption>002 / DOMAIN CLASH</figcaption></figure><figure class="archive-cell cell-3 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="003 / LIMITLESS BROLUK"><img src="assets/media/szr-with-gojo.png" alt="szr with Gojo in Tokyo"/><figcaption>003 / LIMITLESS BROLUK</figcaption></figure><figure class="archive-cell cell-4 reveal tilt portal-trigger" tabindex="0" role="button" data-caption="004 / BACKSTAGE SIGNAL"><img src="assets/media/szr-vs-gojo.png" alt="szr facing Gojo in a cinematic scene"/><figcaption>004 / BACKSTAGE SIGNAL</figcaption></figure></div>
     </section>
     <section id="outro" class="outro scene" data-scene="6">
       <div class="outro-sleeve reveal" aria-hidden="true"><div class="sleeve-image"></div><span>SB_04</span><small>NONCHALANT<br/>ARCHIVE</small></div>
@@ -90,6 +95,6 @@
     </section>
   </main>
   <footer><span>SB_04 // UNOFFICIAL PARODY FILE</span><span>NO REAL CLAIMS // NO AURA</span></footer>
-  <script src="script.js"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>

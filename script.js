@@ -56,12 +56,6 @@ function drawVoid(time = 0) {
 }
 if (!reduceMotion) requestAnimationFrame(drawVoid);
 
-let audioContext, soundOn = false;
-const soundButton = document.querySelector('.sound'), soundLabel = soundButton.querySelector('span');
-soundButton.addEventListener('click', () => { soundOn = !soundOn; soundButton.setAttribute('aria-pressed', String(soundOn)); soundLabel.textContent = soundOn ? 'SOUND_1' : 'SOUND_0'; if (soundOn) tone(110, .09, 'sawtooth'); });
-function tone(frequency = 80, duration = .035, type = 'sine') { if (!soundOn && duration < .09) return; audioContext ||= new AudioContext(); const oscillator = audioContext.createOscillator(), gain = audioContext.createGain(); oscillator.type = type; oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime); gain.gain.setValueAtTime(.025, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(.0001, audioContext.currentTime + duration); oscillator.connect(gain).connect(audioContext.destination); oscillator.start(); oscillator.stop(audioContext.currentTime + duration); }
-document.querySelectorAll('a,button').forEach((item) => item.addEventListener('pointerenter', () => tone(72, .03)));
-
 const eventFlash = document.querySelector('.event-flash');
 const eventName = eventFlash.querySelector('span');
 const eventCode = eventFlash.querySelector('b');
@@ -82,7 +76,6 @@ function fireEvent(name, source) {
     document.querySelectorAll('.lex-card').forEach((card) => card.classList.remove('is-active'));
     source.classList.add('is-active');
   }
-  if (soundOn) tone(({ scale: 62, shift: 84, voice: 108, breathe: 48 })[mode] || 55, .12, 'sawtooth');
   eventTimer = setTimeout(() => { document.body.classList.remove('eventing'); eventFlash.classList.remove('fire'); }, 680);
 }
 document.querySelectorAll('[data-event]').forEach((item) => {
@@ -111,11 +104,118 @@ portal.addEventListener('click', (event) => { if (event.target === portal) porta
 
 const audioDeck = document.querySelector('.audio-deck');
 const deckToggle = document.querySelector('.deck-toggle');
+const deckAudio = document.querySelector('#deck-audio');
+const deckPlay = document.querySelector('.deck-play');
+const deckPrev = document.querySelector('.deck-prev');
+const deckNext = document.querySelector('.deck-next');
+const deckSeek = document.querySelector('.deck-seek');
+const deckCurrent = document.querySelector('.deck-current');
+const deckDuration = document.querySelector('.deck-duration');
+const deckTitle = document.querySelector('.deck-copy strong');
+const deckMeta = document.querySelector('.deck-copy small');
+const deckStatus = document.querySelector('.deck-copy > span');
+const deckSource = document.querySelector('.deck-source');
+const tracks = [
+  { id: 'money', title: 'MONËY SO BIG', appleId: '1675399628', source: 'https://music.apple.com/us/song/1675399628' },
+  { id: 'come', title: 'COMË N GO', appleId: '1830346719', source: 'https://music.apple.com/us/song/1830346719' },
+  { id: 'die', title: 'D.I.E.', appleId: null, source: null },
+  { id: 'countup', title: 'COUNTUP', appleId: '6825987512', source: 'https://music.apple.com/us/album/countup/6825987374?i=6825987512' }
+];
+let activeTrack = 1;
+let loadToken = 0;
+
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) return '0:00';
+  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+}
+
+function updateTrackUI() {
+  const track = tracks[activeTrack];
+  deckTitle.textContent = track.title;
+  deckMeta.textContent = `NOW SELECTED / ${String(activeTrack + 1).padStart(2, '0')}`;
+  document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.classList.toggle('is-active', card.dataset.track === track.id));
+  deckSource.hidden = !track.source;
+  if (track.source) deckSource.href = track.source;
+}
+
+async function resolvePreview(track) {
+  if (!track.appleId) return null;
+  if (track.preview) return track.preview;
+  try {
+    const response = await fetch(`https://itunes.apple.com/lookup?id=${track.appleId}`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    track.preview = data.results?.[0]?.previewUrl || null;
+    return track.preview;
+  } catch { return null; }
+}
+
+async function loadTrack(index, autoplay = false) {
+  const token = ++loadToken;
+  activeTrack = (index + tracks.length) % tracks.length;
+  const track = tracks[activeTrack];
+  updateTrackUI();
+  deckSeek.value = 0;
+  deckCurrent.textContent = '0:00';
+  deckDuration.textContent = '0:00';
+  deckAudio.pause();
+  deckAudio.removeAttribute('src');
+  deckAudio.load();
+  if (!track.appleId) {
+    deckStatus.textContent = 'NO OFFICIAL RELEASE / ARCHIVE ONLY';
+    audioDeck.classList.add('open', 'unavailable');
+    audioDeck.classList.remove('loading');
+    deckToggle.setAttribute('aria-expanded', 'true');
+    return;
+  }
+  audioDeck.classList.remove('unavailable');
+  audioDeck.classList.add('loading');
+  deckStatus.textContent = 'CONNECTING TO OFFICIAL PREVIEW';
+  const preview = await resolvePreview(track);
+  if (token !== loadToken) return;
+  audioDeck.classList.remove('loading');
+  if (!preview) {
+    deckAudio.removeAttribute('src');
+    deckAudio.load();
+    deckStatus.textContent = 'OFFICIAL PREVIEW UNAVAILABLE';
+    audioDeck.classList.add('open', 'unavailable');
+    deckToggle.setAttribute('aria-expanded', 'true');
+    return;
+  }
+  deckAudio.src = preview;
+  deckAudio.load();
+  deckStatus.textContent = 'OFFICIAL APPLE MUSIC PREVIEW';
+  if (autoplay) deckAudio.play().catch(() => {});
+}
+
 deckToggle.addEventListener('click', () => {
   const open = audioDeck.classList.toggle('open');
   deckToggle.setAttribute('aria-expanded', String(open));
-  if (open) fireEvent('AUDIO SLOT ARMED', { dataset: { mode: 'voice' } });
 });
+
+deckPlay.addEventListener('click', () => {
+  if (!deckAudio.src) return;
+  deckAudio.paused ? deckAudio.play() : deckAudio.pause();
+});
+deckPrev.addEventListener('click', () => loadTrack(activeTrack - 1, true));
+deckNext.addEventListener('click', () => loadTrack(activeTrack + 1, true));
+deckAudio.addEventListener('play', () => { audioDeck.classList.add('playing'); deckPlay.textContent = 'Ⅱ'; });
+deckAudio.addEventListener('pause', () => { audioDeck.classList.remove('playing'); deckPlay.textContent = '▶'; });
+deckAudio.addEventListener('ended', () => loadTrack(activeTrack + 1, true));
+deckAudio.addEventListener('loadedmetadata', () => { deckDuration.textContent = formatTime(deckAudio.duration); });
+deckAudio.addEventListener('timeupdate', () => {
+  deckCurrent.textContent = formatTime(deckAudio.currentTime);
+  deckSeek.value = deckAudio.duration ? Math.round(deckAudio.currentTime / deckAudio.duration * 1000) : 0;
+});
+deckSeek.addEventListener('input', () => { if (deckAudio.duration) deckAudio.currentTime = deckSeek.value / 1000 * deckAudio.duration; });
+
+document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.addEventListener('click', () => {
+  const index = tracks.findIndex((track) => track.id === card.dataset.track);
+  loadTrack(index, true);
+}));
+
+tracks.forEach((track) => resolvePreview(track));
+loadTrack(1, false);
 
 document.querySelectorAll('.lex-card').forEach((card) => {
   card.addEventListener('pointermove', (event) => {
