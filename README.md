@@ -26,6 +26,12 @@ Sonra `http://localhost:4173` adresini aç.
 
 Görselleri yayımlamadan önce kullanım haklarının sende olduğundan emin ol.
 
+## Şarkıları değiştirme
+
+Player, YouTube IFrame API ile tam şarkıları çalar; sitedeki play/pause/ileri/geri ve süre çubuğu doğrudan YouTube videosunu kontrol eder. Şarkı listesi `script.js` içindeki `tracks` dizisindedir: her kayıtta `id` (`index.html`'deki kartın `data-track` değeri), `title`, `youtubeId` (`watch?v=` sonrası kısım) ve `label` (player'da görünen kaynak etiketi) bulunur.
+
+Video sahibi embed'i kapatmışsa player bunu algılar ve play tuşu şarkıyı YouTube'da açar.
+
 ## GitHub Pages ile yayınlama
 
 1. GitHub'da boş bir repo aç ve bu klasörün içeriğini `main` branch'ine gönder.

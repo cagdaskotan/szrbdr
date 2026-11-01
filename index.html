@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <canvas id="void-canvas" aria-hidden="true"></canvas>
@@ -26,14 +26,14 @@
   <aside class="audio-deck" aria-label="Audio deck">
     <button class="deck-toggle magnetic" type="button" aria-expanded="false" aria-controls="audio-panel"><i></i><span>PLAYER</span></button>
     <div id="audio-panel" class="audio-panel">
+      <div class="yt-stage" aria-label="YouTube player"><div id="yt-player"></div><span class="yt-tag">YOUTUBE // LIVE FEED</span></div>
       <div class="deck-disc" aria-hidden="true"><span>SB</span></div>
       <div class="deck-main">
-        <div class="deck-copy"><small>NOW SELECTED / 02</small><strong>COMË N GO</strong><span>SELECT LOCAL AUDIO TO PLAY</span></div>
+        <div class="deck-copy"><small>NOW SELECTED / 02</small><strong>COMË N GO</strong><span>CONNECTING TO YOUTUBE</span></div>
         <div class="deck-progress"><span class="deck-current">0:00</span><input class="deck-seek" type="range" min="0" max="1000" value="0" aria-label="Seek through track"/><span class="deck-duration">0:00</span></div>
-        <div class="deck-controls"><button class="deck-prev" type="button" aria-label="Previous track">↤</button><button class="deck-play" type="button" aria-label="Play or pause">▶</button><button class="deck-next" type="button" aria-label="Next track">↦</button><a class="deck-source" href="https://music.apple.com/us/song/1830346719" target="_blank" rel="noreferrer">OFFICIAL SOURCE ↗</a></div>
+        <div class="deck-controls"><button class="deck-prev" type="button" aria-label="Previous track">↤</button><button class="deck-play" type="button" aria-label="Play or pause">▶</button><button class="deck-next" type="button" aria-label="Next track">↦</button><button class="deck-video" type="button" aria-pressed="true" aria-label="Show or hide video">VIDEO</button><a class="deck-source" href="https://www.youtube.com/watch?v=QqzXvvdk3bQ" target="_blank" rel="noreferrer">YOUTUBE ↗</a></div>
       </div>
       <div class="deck-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <audio id="deck-audio" preload="metadata"></audio>
     </div>
   </aside>
   <main id="top">
@@ -42,7 +42,15 @@
       <p class="locator reveal">ANTALYA / 36.89°N 30.70°E<br/>02 NOV 2004</p>
       <p class="status reveal"><i></i> SUBJECT DETECTED<br/>AURA NOT FOUND</p>
       <div class="hero-type" aria-label="Sezer Badur"><span class="hero-line line-a" data-depth="-.055">SEZER</span><span class="hero-line line-b" data-depth=".075">BADUR</span></div>
-      <button class="hero-artifact interactive-3d" type="button" data-event="AURA_COLLAPSE" aria-label="Trigger 3D aura collapse"><div class="artifact-ring ring-1"></div><div class="artifact-ring ring-2"></div><div class="artifact-core"><span>−∞</span></div><div class="artifact-axis axis-x"></div><div class="artifact-axis axis-y"></div></button>
+      <button class="hero-artifact interactive-3d" type="button" data-event="AURA_COLLAPSE" aria-label="Trigger 3D aura collapse">
+        <span class="artifact-halo" aria-hidden="true"></span><span class="artifact-floor" aria-hidden="true"></span>
+        <span class="artifact-scene" aria-hidden="true">
+          <span class="gyro g1"><i><b></b></i></span><span class="gyro g2"><i><b></b></i></span><span class="gyro g3"><i><b></b></i></span>
+          <span class="artifact-axis axis-x"></span><span class="artifact-axis axis-y"></span><span class="artifact-axis axis-z"></span>
+          <span class="gem-spin"><span class="artifact-gem"><span class="gem-face gem-front"><em>−∞</em></span><span class="gem-face gem-back"><em>SB</em></span><span class="gem-side" style="--a:0deg"></span><span class="gem-side" style="--a:60deg"></span><span class="gem-side" style="--a:120deg"></span><span class="gem-side" style="--a:180deg"></span><span class="gem-side" style="--a:240deg"></span><span class="gem-side" style="--a:300deg"></span></span></span>
+        </span>
+        <span class="artifact-hud" aria-hidden="true"><small>AURA_CORE // UNSTABLE</small><small class="hud-rot">ROT 000° / 000°</small><small>TAP TO COLLAPSE</small></span>
+      </button>
       <div class="hero-foot reveal"><p>UNOFFICIAL FILE<br/>ZERO VERIFIED AURA</p><a class="launch magnetic" href="#lexicon"><span>ENTER TRANSMISSION</span><b>↘</b></a><p class="align-right">OSNS MODE<br/>ALWAYS ON</p></div>
       <div class="marquee" aria-hidden="true"><div class="marquee-track"><span>UP 2 MË&nbsp; ✦ &nbsp;LYFË&nbsp; ✦ &nbsp;2093&nbsp; ✦ &nbsp;MONËY SO BIG&nbsp; ✦ &nbsp;OUT THË WAY&nbsp; ✦ &nbsp;TALK&nbsp; ✦ &nbsp;BREATHE&nbsp; ✦ &nbsp;SZR TRANSMISSION&nbsp; ✦ &nbsp;</span><span>UP 2 MË&nbsp; ✦ &nbsp;LYFË&nbsp; ✦ &nbsp;2093&nbsp; ✦ &nbsp;MONËY SO BIG&nbsp; ✦ &nbsp;OUT THË WAY&nbsp; ✦ &nbsp;TALK&nbsp; ✦ &nbsp;BREATHE&nbsp; ✦ &nbsp;SZR TRANSMISSION&nbsp; ✦ &nbsp;</span></div></div>
     </section>
@@ -60,7 +68,7 @@
       <div class="profile-ghost" aria-hidden="true">04</div><div class="section-index light reveal"><span>02</span><p>SUBJECT<br/>INDEX</p></div>
       <div class="profile-layout">
         <div class="date-stack reveal"><span>02</span><span>11</span><span>04</span></div>
-        <div class="profile-copy reveal"><p class="label">ONLY VERIFIED DATA</p><h2>BORN IN<br/><span>ANTALYA.</span></h2><p>Everything after this line is disputed, exaggerated or straight-up szr lore.</p></div>
+        <div class="profile-copy reveal"><p class="label">ONLY VERIFIED DATA</p><h2>BORN IN<br/><span>ANTALYA.</span></h2><p>Everything after this line is disputed or exaggerated.</p></div>
         <div class="profile-readout reveal"><div><span>AURA</span><b>−∞</b></div><div><span>NONCHALANCE</span><b>99.9</b></div><div><span>LOCKED IN</span><b>0.0</b></div><div><span>TYPE</span><b>SHI</b></div></div>
         <figure class="birth-object reveal tilt portal-trigger" tabindex="0" role="button" data-caption="ANTALYA / FIRST SIGHTING"><span class="birth-stamp">ANTALYA<br/>02.11.04</span><img src="assets/media/szr-birth.png" alt="szr wrapped in a bear blanket"/><figcaption>ORIGIN FILE // ALLEGEDLY REAL</figcaption></figure>
       </div>
@@ -95,6 +103,7 @@
     </section>
   </main>
   <footer><span>SB_04 // UNOFFICIAL PARODY FILE</span><span>NO REAL CLAIMS // NO AURA</span></footer>
-  <script src="script.js?v=8"></script>
+  <script src="script.js?v=10"></script>
+  <script src="https://www.youtube.com/iframe_api" async></script>
 </body>
 </html>

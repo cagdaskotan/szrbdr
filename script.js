@@ -104,10 +104,10 @@ portal.addEventListener('click', (event) => { if (event.target === portal) porta
 
 const audioDeck = document.querySelector('.audio-deck');
 const deckToggle = document.querySelector('.deck-toggle');
-const deckAudio = document.querySelector('#deck-audio');
 const deckPlay = document.querySelector('.deck-play');
 const deckPrev = document.querySelector('.deck-prev');
 const deckNext = document.querySelector('.deck-next');
+const deckVideo = document.querySelector('.deck-video');
 const deckSeek = document.querySelector('.deck-seek');
 const deckCurrent = document.querySelector('.deck-current');
 const deckDuration = document.querySelector('.deck-duration');
@@ -116,13 +116,16 @@ const deckMeta = document.querySelector('.deck-copy small');
 const deckStatus = document.querySelector('.deck-copy > span');
 const deckSource = document.querySelector('.deck-source');
 const tracks = [
-  { id: 'money', title: 'MONËY SO BIG', appleId: '1675399628', source: 'https://music.apple.com/us/song/1675399628', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/39/40/03/394003bc-ab92-bfd4-2604-f94e31695536/mzaf_3737952009789400677.plus.aac.p.m4a' },
-  { id: 'come', title: 'COMË N GO', appleId: '1830346719', source: 'https://music.apple.com/us/song/1830346719', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/32/df/1e/32df1e5c-f6b0-c872-e7ff-1b817ef5a2e7/mzaf_11882061186503271522.plus.aac.p.m4a' },
-  { id: 'die', title: 'D.I.E.', appleId: null, source: null },
-  { id: 'countup', title: 'COUNTUP', appleId: '6825987512', source: 'https://music.apple.com/us/album/countup/6825987374?i=6825987512', preview: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/2c/df/d8/2cdfd825-c62a-8b96-900a-96be12227463/mzaf_2075193523418678729.plus.aac.p.m4a' }
+  { id: 'money', title: 'MONËY SO BIG', youtubeId: 'w1GBTgxIvcY', label: 'YEAT - TOPIC // FULL TRACK' },
+  { id: 'come', title: 'COMË N GO', youtubeId: 'QqzXvvdk3bQ', label: 'OFFICIAL VIDEO // YEAT' },
+  { id: 'die', title: 'D.I.E.', youtubeId: 'XcYlBQMYYkc', label: 'ARCHIVE UPLOAD // UNRELEASED' },
+  { id: 'countup', title: 'COUNTUP', youtubeId: '6bkRnqMvRnw', label: 'OFFICIAL AUDIO // YEAT' }
 ];
 let activeTrack = 1;
-let loadToken = 0;
+let ytPlayer = null;
+let ytReady = false;
+let pendingAutoplay = false;
+let progressTimer;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return '0:00';
@@ -134,59 +137,56 @@ function updateTrackUI() {
   deckTitle.textContent = track.title;
   deckMeta.textContent = `NOW SELECTED / ${String(activeTrack + 1).padStart(2, '0')}`;
   document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.classList.toggle('is-active', card.dataset.track === track.id));
-  deckSource.hidden = !track.source;
-  if (track.source) deckSource.href = track.source;
+  deckSource.href = `https://www.youtube.com/watch?v=${track.youtubeId}`;
 }
 
-async function resolvePreview(track) {
-  if (!track.appleId) return null;
-  if (track.preview) return track.preview;
-  try {
-    const response = await fetch(`https://itunes.apple.com/lookup?id=${track.appleId}`);
-    if (!response.ok) return null;
-    const data = await response.json();
-    track.preview = data.results?.[0]?.previewUrl || null;
-    return track.preview;
-  } catch { return null; }
+function updateProgress() {
+  if (!ytReady) return;
+  const current = ytPlayer.getCurrentTime() || 0, duration = ytPlayer.getDuration() || 0;
+  deckCurrent.textContent = formatTime(current);
+  deckDuration.textContent = formatTime(duration);
+  deckSeek.value = duration ? Math.round(current / duration * 1000) : 0;
 }
 
-async function loadTrack(index, autoplay = false) {
-  const token = ++loadToken;
+function loadTrack(index, autoplay = false) {
   activeTrack = (index + tracks.length) % tracks.length;
   const track = tracks[activeTrack];
   updateTrackUI();
   deckSeek.value = 0;
   deckCurrent.textContent = '0:00';
   deckDuration.textContent = '0:00';
-  deckAudio.pause();
-  deckAudio.removeAttribute('src');
-  deckAudio.load();
-  if (!track.appleId) {
-    deckStatus.textContent = 'NO OFFICIAL RELEASE / ARCHIVE ONLY';
-    audioDeck.classList.add('open', 'unavailable');
-    audioDeck.classList.remove('loading');
-    deckToggle.setAttribute('aria-expanded', 'true');
-    return;
-  }
-  audioDeck.classList.remove('unavailable');
-  audioDeck.classList.add('loading');
-  deckStatus.textContent = 'CONNECTING TO OFFICIAL PREVIEW';
-  const preview = track.preview || await resolvePreview(track);
-  if (token !== loadToken) return;
-  audioDeck.classList.remove('loading');
-  if (!preview) {
-    deckAudio.removeAttribute('src');
-    deckAudio.load();
-    deckStatus.textContent = 'OFFICIAL PREVIEW UNAVAILABLE';
-    audioDeck.classList.add('open', 'unavailable');
-    deckToggle.setAttribute('aria-expanded', 'true');
-    return;
-  }
-  deckAudio.src = preview;
-  deckAudio.load();
-  deckStatus.textContent = 'OFFICIAL APPLE MUSIC PREVIEW';
-  if (autoplay) deckAudio.play().catch(() => {});
+  audioDeck.classList.remove('unavailable', 'playing');
+  deckPlay.textContent = '▶';
+  deckStatus.textContent = track.label;
+  if (!ytReady) { pendingAutoplay = autoplay; return; }
+  autoplay ? ytPlayer.loadVideoById(track.youtubeId) : ytPlayer.cueVideoById(track.youtubeId);
 }
+
+window.onYouTubeIframeAPIReady = () => {
+  ytPlayer = new YT.Player('yt-player', {
+    videoId: tracks[activeTrack].youtubeId,
+    playerVars: { playsinline: 1, rel: 0, controls: 0, disablekb: 1, iv_load_policy: 3, modestbranding: 1 },
+    events: {
+      onReady: () => { ytReady = true; loadTrack(activeTrack, pendingAutoplay); },
+      onStateChange: ({ data }) => {
+        const playing = data === YT.PlayerState.PLAYING;
+        audioDeck.classList.toggle('playing', playing);
+        audioDeck.classList.toggle('loading', data === YT.PlayerState.BUFFERING);
+        deckPlay.textContent = playing ? 'Ⅱ' : '▶';
+        clearInterval(progressTimer);
+        if (playing) progressTimer = setInterval(updateProgress, 250);
+        updateProgress();
+        if (data === YT.PlayerState.ENDED) loadTrack(activeTrack + 1, true);
+      },
+      onError: () => {
+        audioDeck.classList.remove('playing', 'loading');
+        audioDeck.classList.add('unavailable');
+        deckStatus.textContent = 'EMBED BLOCKED // OPEN ON YOUTUBE';
+      }
+    }
+  });
+};
+setTimeout(() => { if (!ytReady) deckStatus.textContent = 'YOUTUBE OFFLINE // USE SOURCE LINK'; }, 9000);
 
 deckToggle.addEventListener('click', () => {
   const open = audioDeck.classList.toggle('open');
@@ -194,20 +194,21 @@ deckToggle.addEventListener('click', () => {
 });
 
 deckPlay.addEventListener('click', () => {
-  if (!deckAudio.src) return;
-  deckAudio.paused ? deckAudio.play() : deckAudio.pause();
+  if (audioDeck.classList.contains('unavailable')) { open(deckSource.href, '_blank', 'noopener'); return; }
+  if (!ytReady) { pendingAutoplay = true; return; }
+  ytPlayer.getPlayerState() === YT.PlayerState.PLAYING ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
 });
 deckPrev.addEventListener('click', () => loadTrack(activeTrack - 1, true));
 deckNext.addEventListener('click', () => loadTrack(activeTrack + 1, true));
-deckAudio.addEventListener('play', () => { audioDeck.classList.add('playing'); deckPlay.textContent = 'Ⅱ'; });
-deckAudio.addEventListener('pause', () => { audioDeck.classList.remove('playing'); deckPlay.textContent = '▶'; });
-deckAudio.addEventListener('ended', () => loadTrack(activeTrack + 1, true));
-deckAudio.addEventListener('loadedmetadata', () => { deckDuration.textContent = formatTime(deckAudio.duration); });
-deckAudio.addEventListener('timeupdate', () => {
-  deckCurrent.textContent = formatTime(deckAudio.currentTime);
-  deckSeek.value = deckAudio.duration ? Math.round(deckAudio.currentTime / deckAudio.duration * 1000) : 0;
+deckVideo.addEventListener('click', () => {
+  const hidden = audioDeck.classList.toggle('video-off');
+  deckVideo.setAttribute('aria-pressed', String(!hidden));
 });
-deckSeek.addEventListener('input', () => { if (deckAudio.duration) deckAudio.currentTime = deckSeek.value / 1000 * deckAudio.duration; });
+deckSeek.addEventListener('input', () => {
+  if (!ytReady) return;
+  const duration = ytPlayer.getDuration();
+  if (duration) { ytPlayer.seekTo(deckSeek.value / 1000 * duration, true); updateProgress(); }
+});
 
 document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.addEventListener('click', () => {
   const index = tracks.findIndex((track) => track.id === card.dataset.track);
@@ -216,8 +217,31 @@ document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.addEve
   loadTrack(index, true);
 }));
 
-tracks.forEach((track) => resolvePreview(track));
 loadTrack(1, false);
+
+const heroArtifact = document.querySelector('.hero-artifact');
+const heroScene = heroArtifact.querySelector('.artifact-scene');
+const heroRot = heroArtifact.querySelector('.hud-rot');
+let tiltX = -8, tiltY = 0, targetTiltX = -8, targetTiltY = 0, hudFrame = 0;
+if (!reduceMotion) {
+  const hero = document.querySelector('.hero');
+  hero.addEventListener('pointermove', (event) => { targetTiltY = (event.clientX / innerWidth - .5) * 56; targetTiltX = -8 - (event.clientY / innerHeight - .5) * 38; });
+  hero.addEventListener('pointerleave', () => { targetTiltX = -8; targetTiltY = 0; });
+  const tiltHero = () => {
+    tiltX += (targetTiltX - tiltX) * .07; tiltY += (targetTiltY - tiltY) * .07;
+    heroScene.style.setProperty('--rx', `${tiltX.toFixed(2)}deg`);
+    heroScene.style.setProperty('--ry', `${(tiltY + scrollRatio * 140).toFixed(2)}deg`);
+    if (++hudFrame % 6 === 0) heroRot.textContent = `ROT ${String(Math.round(Math.abs(tiltX))).padStart(3, '0')}° / ${String(Math.round(Math.abs(tiltY + scrollRatio * 140)) % 360).padStart(3, '0')}°`;
+    requestAnimationFrame(tiltHero);
+  };
+  tiltHero();
+}
+heroArtifact.addEventListener('click', () => {
+  heroArtifact.classList.remove('collapse');
+  void heroArtifact.offsetWidth;
+  heroArtifact.classList.add('collapse');
+});
+heroArtifact.addEventListener('animationend', (event) => { if (event.animationName === 'gemBurst') heroArtifact.classList.remove('collapse'); });
 
 document.querySelectorAll('.lex-card').forEach((card) => {
   card.addEventListener('pointermove', (event) => {
