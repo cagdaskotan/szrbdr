@@ -115,6 +115,9 @@ const deckTitle = document.querySelector('.deck-copy strong');
 const deckMeta = document.querySelector('.deck-copy small');
 const deckStatus = document.querySelector('.deck-copy > span');
 const deckSource = document.querySelector('.deck-source');
+const deckMini = document.querySelector('.deck-mini');
+const miniState = deckMini.querySelector('small');
+const miniTitle = deckMini.querySelector('b');
 const tracks = [
   { id: 'money', title: 'MONËY SO BIG', youtubeId: 'w1GBTgxIvcY', label: 'YEAT - TOPIC // FULL TRACK' },
   { id: 'come', title: 'COMË N GO', youtubeId: 'QqzXvvdk3bQ', label: 'OFFICIAL VIDEO // YEAT' },
@@ -126,6 +129,8 @@ let ytPlayer = null;
 let ytReady = false;
 let pendingAutoplay = false;
 let progressTimer;
+let userActivated = false;
+let unlockedAt = 0;
 
 function formatTime(seconds) {
   if (!Number.isFinite(seconds)) return '0:00';
@@ -135,9 +140,12 @@ function formatTime(seconds) {
 function updateTrackUI() {
   const track = tracks[activeTrack];
   deckTitle.textContent = track.title;
+  miniTitle.textContent = track.title;
   deckMeta.textContent = `NOW SELECTED / ${String(activeTrack + 1).padStart(2, '0')}`;
   document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.classList.toggle('is-active', card.dataset.track === track.id));
   deckSource.href = `https://www.youtube.com/watch?v=${track.youtubeId}`;
+  const stage = document.querySelector('.lexicon-stage'), card = stage.querySelector(`[data-track="${track.id}"]`);
+  if (card && stage.scrollWidth > stage.clientWidth) stage.scrollTo({ left: stage.scrollLeft + card.getBoundingClientRect().left - stage.getBoundingClientRect().left - (stage.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
 }
 
 function updateProgress() {
@@ -158,6 +166,10 @@ function loadTrack(index, autoplay = false) {
   audioDeck.classList.remove('unavailable', 'playing');
   deckPlay.textContent = '▶';
   deckStatus.textContent = track.label;
+  miniState.textContent = autoplay ? 'TUNING IN' : 'STANDBY';
+  deckMini.classList.remove('bump');
+  void deckMini.offsetWidth;
+  deckMini.classList.add('bump');
   if (!ytReady) { pendingAutoplay = autoplay; return; }
   autoplay ? ytPlayer.loadVideoById(track.youtubeId) : ytPlayer.cueVideoById(track.youtubeId);
 }
@@ -167,10 +179,17 @@ window.onYouTubeIframeAPIReady = () => {
     videoId: tracks[activeTrack].youtubeId,
     playerVars: { playsinline: 1, rel: 0, controls: 0, disablekb: 1, iv_load_policy: 3, modestbranding: 1 },
     events: {
-      onReady: () => { ytReady = true; loadTrack(activeTrack, pendingAutoplay); },
+      onReady: () => {
+        ytReady = true;
+        if (!userActivated) { ytPlayer.mute(); audioDeck.classList.add('muted'); }
+        loadTrack(activeTrack, pendingAutoplay);
+      },
       onStateChange: ({ data }) => {
         const playing = data === YT.PlayerState.PLAYING;
         audioDeck.classList.toggle('playing', playing);
+        document.body.classList.toggle('music-on', playing);
+        document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.classList.toggle('is-playing', playing && card.dataset.track === tracks[activeTrack].id));
+        if (!audioDeck.classList.contains('unavailable')) miniState.textContent = playing ? (audioDeck.classList.contains('muted') ? 'PLAYING // MUTED' : 'NOW PLAYING') : data === YT.PlayerState.BUFFERING ? 'TUNING IN' : 'PAUSED';
         audioDeck.classList.toggle('loading', data === YT.PlayerState.BUFFERING);
         deckPlay.textContent = playing ? 'Ⅱ' : '▶';
         clearInterval(progressTimer);
@@ -181,6 +200,8 @@ window.onYouTubeIframeAPIReady = () => {
       onError: () => {
         audioDeck.classList.remove('playing', 'loading');
         audioDeck.classList.add('unavailable');
+        document.body.classList.remove('music-on');
+        miniState.textContent = 'OPEN ON YOUTUBE';
         deckStatus.textContent = 'EMBED BLOCKED // OPEN ON YOUTUBE';
       }
     }
@@ -193,11 +214,28 @@ deckToggle.addEventListener('click', () => {
   deckToggle.setAttribute('aria-expanded', String(open));
 });
 
-deckPlay.addEventListener('click', () => {
+function unlockSound() {
+  userActivated = true;
+  unlockedAt = performance.now();
+  ['pointerdown', 'keydown', 'touchstart'].forEach((type) => removeEventListener(type, unlockSound, true));
+  if (!audioDeck.classList.contains('muted')) return;
+  audioDeck.classList.remove('muted');
+  if (!ytReady) return;
+  ytPlayer.unMute();
+  ytPlayer.setVolume(100);
+  if (ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING && !audioDeck.classList.contains('unavailable')) ytPlayer.playVideo();
+  if (ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) miniState.textContent = 'NOW PLAYING';
+}
+['pointerdown', 'keydown', 'touchstart'].forEach((type) => addEventListener(type, unlockSound, { capture: true, passive: true }));
+
+function togglePlayback() {
   if (audioDeck.classList.contains('unavailable')) { open(deckSource.href, '_blank', 'noopener'); return; }
+  if (performance.now() - unlockedAt < 700) return;
   if (!ytReady) { pendingAutoplay = true; return; }
   ytPlayer.getPlayerState() === YT.PlayerState.PLAYING ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
-});
+}
+deckPlay.addEventListener('click', togglePlayback);
+deckMini.addEventListener('click', togglePlayback);
 deckPrev.addEventListener('click', () => loadTrack(activeTrack - 1, true));
 deckNext.addEventListener('click', () => loadTrack(activeTrack + 1, true));
 deckVideo.addEventListener('click', () => {
@@ -212,12 +250,20 @@ deckSeek.addEventListener('input', () => {
 
 document.querySelectorAll('.lex-card[data-track]').forEach((card) => card.addEventListener('click', () => {
   const index = tracks.findIndex((track) => track.id === card.dataset.track);
-  audioDeck.classList.add('open');
-  deckToggle.setAttribute('aria-expanded', 'true');
+  if (index === activeTrack && audioDeck.classList.contains('playing')) return;
   loadTrack(index, true);
 }));
 
-loadTrack(1, false);
+loadTrack(1, true);
+
+const countObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
+  if (!entry.isIntersecting) return;
+  countObserver.unobserve(entry.target);
+  const target = Number(entry.target.dataset.count), start = performance.now();
+  const step = (now) => { const p = Math.min(1, (now - start) / 1400); entry.target.textContent = (target * (1 - (1 - p) ** 3)).toFixed(1); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}), { threshold: .6 });
+document.querySelectorAll('[data-count]').forEach((item) => countObserver.observe(item));
 
 const heroArtifact = document.querySelector('.hero-artifact');
 const heroScene = heroArtifact.querySelector('.artifact-scene');

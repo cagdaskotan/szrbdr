@@ -30,6 +30,8 @@ Görselleri yayımlamadan önce kullanım haklarının sende olduğundan emin ol
 
 Player, YouTube IFrame API ile tam şarkıları çalar; sitedeki play/pause/ileri/geri ve süre çubuğu doğrudan YouTube videosunu kontrol eder. Şarkı listesi `script.js` içindeki `tracks` dizisindedir: her kayıtta `id` (`index.html`'deki kartın `data-track` değeri), `title`, `youtubeId` (`watch?v=` sonrası kısım) ve `label` (player'da görünen kaynak etiketi) bulunur.
 
+Sayfa açılınca COMË N GO otomatik başlar. Tarayıcılar sesli otomatik oynatmaya izin vermediği için önce sessiz başlar; ziyaretçinin sayfadaki ilk dokunuşu/tıklaması sesi açar. Kart seçmek player panelini açmaz, şarkıyı değiştirir; panel sol alttaki tuşla açılır.
+
 Video sahibi embed'i kapatmışsa player bunu algılar ve play tuşu şarkıyı YouTube'da açar.
 
 ## GitHub Pages ile yayınlama
